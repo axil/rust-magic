@@ -2,7 +2,7 @@
 
 Allows to try rust in jupyter notebook. Implemented via line/cell magics:
 
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/rust-magic.png" width="400">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/rust-magic.png" width="600">
 
 ## Installation
 
