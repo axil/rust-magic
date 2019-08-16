@@ -8,17 +8,28 @@ class MyMagics(Magics):
     @line_cell_magic
     def rust(self, line, cell=None):
         "Magic that works both as %lcmagic and as %%lcmagic"
-        wrapper =  '''\
+        print_wrapper =  '''\
                 fn main(){
-                    println!("{}", (||{%s})());
+                    println!("{:?}", (||{%s})());
+                }\
+        '''           
+        run_wrapper =  '''\
+                fn main(){
+                    %s
                 }\
         '''           
         if cell is None:
-            body = wrapper % line
+            if line.rstrip().endswith(';'):
+                body = run_wrapper % line
+            else:
+                body = print_wrapper % line
         elif 'fn main(' in cell:
             body = cell
         else:
-            body = wrapper % cell
+            if cell.rstrip().endswith(';'):
+                body = run_wrapper % cell
+            else:
+                body = print_wrapper % cell
         open('cell.rs', 'w').write(body)
         res = subprocess.run('cargo script cell.rs'.split(), capture_output=True)
         if res.returncode == 0:
