@@ -22,4 +22,6 @@ are supported via normal `cargo script` syntax:
 
 ## Compiler options
 
-can be provided in the cell (%%rust) mode.
+can be provided in the cell mode:
+
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/debug.png" width="800">
