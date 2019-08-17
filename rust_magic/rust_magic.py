@@ -23,15 +23,19 @@ class MyMagics(Magics):
                 body = run_wrapper % line
             else:
                 body = print_wrapper % line
-        elif 'fn main(' in cell:
-            body = cell
         else:
-            if cell.rstrip().endswith(';'):
-                body = run_wrapper % cell
+            opt = line.strip()
+            if opt:
+                opt += ' '
+            if 'fn main(' in cell:
+                body = cell
             else:
-                body = print_wrapper % cell
+                if cell.rstrip().endswith(';'):
+                    body = run_wrapper % cell
+                else:
+                    body = print_wrapper % cell
         open('cell.rs', 'w').write(body)
-        res = subprocess.run('cargo script cell.rs'.split(), capture_output=True)
+        res = subprocess.run(f'cargo script {opt}cell.rs'.split(), capture_output=True)
         if res.returncode == 0:
             print(res.stdout.decode().rstrip())
         else:
