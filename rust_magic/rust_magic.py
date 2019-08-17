@@ -17,7 +17,8 @@ class MyMagics(Magics):
                 fn main(){
                     %s
                 }\
-        '''           
+        ''' 
+        opt = ''
         if cell is None:
             if line.rstrip().endswith(';'):
                 body = run_wrapper % line
