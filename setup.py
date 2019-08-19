@@ -2,12 +2,12 @@
 
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md", "rb") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="rust_magic",
-    version="0.2.1",
+    version="0.2.3",
     author='Lev Maximov',
     author_email='lev.maximov@gmail.com',
     url='https://github.com/axil/rust-magic',
