@@ -1,6 +1,6 @@
 # rust-magic
 
-Allows to try rust in jupyter notebook. Implemented via line/cell magics:
+Allows to try rust in Jupyter notebook. Implemented via line/cell magics:
 
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/rust-magic.png" width="600">
 
@@ -14,7 +14,7 @@ Allows to try rust in jupyter notebook. Implemented via line/cell magics:
 
 4. Enjoy :)
 
-## Third-party crates 
+## Third-party crates
 
 are supported via normal `cargo script` syntax:
 

@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rust_magic",
-    version="0.2.0",
+    version="0.2.1",
     author='Lev Maximov',
     author_email='lev.maximov@gmail.com',
     url='https://github.com/axil/rust-magic',
@@ -22,4 +22,3 @@ setuptools.setup(
     ],
     zip_safe=False,
 )
-
