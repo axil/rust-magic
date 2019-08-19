@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rust_magic",
-    version="0.2.3",
+    version="0.2.4",
     author='Lev Maximov',
     author_email='lev.maximov@gmail.com',
     url='https://github.com/axil/rust-magic',
@@ -20,5 +20,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    license="MIT License",
     zip_safe=False,
+    keywords=['rust', 'jupyter', 'notebook', 'magic'],
 )
