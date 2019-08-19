@@ -1,18 +1,21 @@
 from __future__ import print_function
 from IPython.core.magic import (Magics, magics_class, line_magic,
                                 cell_magic, line_cell_magic)
-import subprocess
+from subprocess import run, PIPE
+from textwrap import dedent
 
 @magics_class
 class MyMagics(Magics):
     @line_cell_magic
     def rust(self, line, cell=None):
         "Magic that works both as %lcmagic and as %%lcmagic"
-        print_wrapper =  '''\
+        print_wrapper =  dedent('''\
                 fn main(){
-                    println!("{:?}", (||{%s})());
+                    println!("{:?}", (||{
+                        %s
+                    })());
                 }\
-        '''           
+        ''')
         run_wrapper =  '''\
                 fn main(){
                     %s
@@ -36,7 +39,7 @@ class MyMagics(Magics):
                 else:
                     body = print_wrapper % cell
         open('cell.rs', 'w').write(body)
-        res = subprocess.run(f'cargo script {opt}cell.rs'.split(), capture_output=True)
+        res = run(f'cargo script {opt}cell.rs'.split(), stdout=PIPE, stderr=PIPE)
         if res.returncode == 0:
             print(res.stdout.decode().rstrip())
         else:
