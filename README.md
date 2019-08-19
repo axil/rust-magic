@@ -25,3 +25,6 @@ are supported via normal `cargo script` syntax:
 can be provided in the cell mode:
 
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/debug1.png" width="800">
+
+Copy-pastable form of the examples on [github](https://github.com/axil/rust-magic/blob/master/example.ipynb) or in
+[nbviewer](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/example.ipynb).
