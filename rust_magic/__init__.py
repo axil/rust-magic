@@ -3,6 +3,7 @@ from IPython.core.magic import (Magics, magics_class, line_magic,
                                 cell_magic, line_cell_magic)
 from subprocess import run, PIPE, STDOUT, Popen
 from textwrap import dedent
+from time import perf_counter as clock
 
 __version__ = '0.2.7'
 
@@ -48,6 +49,14 @@ class MyMagics(Magics):
                     print(line.decode().rstrip())
                 else:
                     break
+    
+    @line_cell_magic
+    def trust(self, line, cell=None):
+        t1 = clock()
+        self.rust(line, cell)
+        t2 = clock()
+        print('Took %.0f ms' % ((t2-t1)*1000))
+
 
 def load_ipython_extension(ipython):
     ipython.register_magics(MyMagics)
