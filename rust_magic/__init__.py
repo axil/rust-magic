@@ -4,11 +4,32 @@ from IPython.core.magic import (Magics, magics_class, line_magic,
 from subprocess import run, PIPE, STDOUT, Popen
 from textwrap import dedent
 from time import perf_counter as clock
+import os
+import tempfile
 
-__version__ = '0.2.7'
+__version__ = '0.3.0'
+
+from contextlib import contextmanager
+
+@contextmanager
+def cwd(path):
+    oldpwd=os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(oldpwd)
+
+def calc_hash(s):
+    return ('%04x' % hash(s))[-4:]
 
 @magics_class
 class MyMagics(Magics):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.temp_dir = tempfile.TemporaryDirectory()
+        print(self.temp_dir.name)
+
     @line_cell_magic
     def rust(self, line, cell=None):
         "Magic that works both as %lcmagic and as %%lcmagic"
@@ -24,7 +45,7 @@ class MyMagics(Magics):
                     %s
                 }\
         ''' 
-        opts = ''
+        cmd = ['cargo', 'script']
         if cell is None:
             if line.rstrip().endswith(';'):
                 body = run_wrapper % line
@@ -33,7 +54,7 @@ class MyMagics(Magics):
         else:
             opts = line.strip()
             if opts:
-                opts = opts.split('#', 1)[0] + ' '
+                cmd.extend(opts.split('#', 1)[0].split())
             if 'fn main(' in cell:
                 body = cell
             else:
@@ -41,14 +62,17 @@ class MyMagics(Magics):
                     body = run_wrapper % cell
                 else:
                     body = print_wrapper % cell
-        open('cell.rs', 'w').write(body)
-        with Popen(('cargo script %scell.rs' % opts).split(), stdout=PIPE, stderr=STDOUT) as proc:
-            while True:
-                line = proc.stdout.readline()
-                if line:
-                    print(line.decode().rstrip())
-                else:
-                    break
+        with cwd(self.temp_dir.name):
+            filename = 'cell-%s.rs' % calc_hash(body)
+            open(filename, 'w').write(body)
+            cmd.append(filename)
+            with Popen(cmd, stdout=PIPE, stderr=STDOUT) as proc:
+                while True:
+                    line = proc.stdout.readline()
+                    if line:
+                        print(line.decode().rstrip())
+                    else:
+                        break
     
     @line_cell_magic
     def trust(self, line, cell=None):
