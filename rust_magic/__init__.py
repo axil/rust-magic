@@ -4,7 +4,7 @@ from IPython.core.magic import (Magics, magics_class, line_magic,
 from subprocess import run, PIPE, STDOUT, Popen
 from textwrap import dedent
 
-__version__ = '0.2.5'
+__version__ = '0.2.7'
 
 @magics_class
 class MyMagics(Magics):
@@ -41,7 +41,7 @@ class MyMagics(Magics):
                 else:
                     body = print_wrapper % cell
         open('cell.rs', 'w').write(body)
-        with Popen(f'cargo script {opts}cell.rs'.split(), stdout=PIPE, stderr=STDOUT) as proc:
+        with Popen(('cargo script %scell.rs' % opts).split(), stdout=PIPE, stderr=STDOUT) as proc:
             while True:
                 line = proc.stdout.readline()
                 if line:
