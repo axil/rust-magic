@@ -20,5 +20,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    license="MIT License",
     zip_safe=False,
+    keywords=['rust', 'jupyter', 'notebook', 'magic'],
 )

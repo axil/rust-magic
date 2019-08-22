@@ -1,14 +1,21 @@
+#!/usr/bin/env python3
+
+# Copyright (c) 2019, Lev Maximov
+# All rights reserved.	
+# Distributed under the terms of the MIT license:
+# http://www.opensource.org/licenses/MIT
+
 from __future__ import print_function
-from IPython.core.magic import (Magics, magics_class, line_magic,
-                                cell_magic, line_cell_magic)
-import sys
 import glob
+import os
 import re
-from subprocess import run, PIPE, STDOUT, Popen
 from textwrap import dedent
 from time import perf_counter as clock
-import os
-import tempfile
+from subprocess import PIPE, STDOUT, Popen
+import sys
+
+from IPython.core.magic import (Magics, magics_class, line_magic,
+                                cell_magic, line_cell_magic)
 
 __version__ = '0.3.2'
 
