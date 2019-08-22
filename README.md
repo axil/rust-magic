@@ -31,8 +31,11 @@ Copy-pastable form of the examples on [github](https://github.com/axil/rust-magi
 
 ## Syntax highlighting
 
+Run the following snippet in a python jupyter cell to enable rust syntax highlighting in %%rust cells:
 ```
-import IPython
-js = "IPython.CodeCell.options_default.highlight_modes['text/x-rustsrc'] = {'reg':[/^%%rust/]};"
-IPython.core.display.display_javascript(js, raw=True)
+from notebook.services.config import ConfigManager
+c = ConfigManager()
+c.update('notebook', {"CodeCell": {"highlight_modes": {"text/x-rustsrc": {"reg": ["^%%rust"]}}}})
 ```
+
+It only needs to be run once: it stores the setting in a config file in home directory.
