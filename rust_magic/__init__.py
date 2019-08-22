@@ -10,7 +10,7 @@ from time import perf_counter as clock
 import os
 import tempfile
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 from contextlib import contextmanager
 
