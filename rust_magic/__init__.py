@@ -28,43 +28,55 @@ class MyMagics(Magics):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.temp_dir = tempfile.TemporaryDirectory()
-        print(self.temp_dir.name)
+        print('Working dir:', self.temp_dir.name)
 
     @line_cell_magic
-    def rust(self, line, cell=None):
+    def rust(self, mline, cell=None):
         "Magic that works both as %lcmagic and as %%lcmagic"
         print_wrapper =  dedent('''\
+                #[allow(unused)]
                 fn main(){
                     println!("{:?}", (||{
                         %s
                     })());
                 }\
         ''')
-        run_wrapper =  '''\
+        run_wrapper =  dedent('''\
+                #[allow(unused)]
                 fn main(){
                     %s
                 }\
-        ''' 
+        ''')
         cmd = ['cargo', 'script']
         if cell is None:
-            if line.rstrip().endswith(';'):
-                body = run_wrapper % line
+            if mline.rstrip().endswith(';'):
+                body = run_wrapper % mline
             else:
-                body = print_wrapper % line
+                body = print_wrapper % mline
         else:
-            opts = line.strip()
+            opts = mline.strip()
             if opts:
                 cmd.extend(opts.split('#', 1)[0].split())
             if 'fn main(' in cell:
                 body = cell
             else:
                 if cell.rstrip().endswith(';'):
-                    body = run_wrapper % cell
+                    wrapper = run_wrapper
                 else:
-                    body = print_wrapper % cell
+                    wrapper = print_wrapper
+                lines = cell.split('\n')
+                for i, line in enumerate(lines):
+                    if line.startswith('//') or \
+                       line.startswith('extern crate') or \
+                       line.startswith('use ') or \
+                       line.strip() == '':
+                        pass
+                    else:
+                        break
+                body = '\n'.join(lines[:i]) + wrapper % '\n'.join(lines[i:])
         with cwd(self.temp_dir.name):
             filename = 'cell-%s.rs' % calc_hash(body)
-            open(filename, 'w').write(body)
+            open(filename, 'wb').write(body.encode('utf8'))
             cmd.append(filename)
             with Popen(cmd, stdout=PIPE, stderr=STDOUT) as proc:
                 while True:
