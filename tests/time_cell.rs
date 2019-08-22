@@ -7,4 +7,4 @@ extern crate time;
 #[allow(unused)]
 fn main(){
     println!("{}", time::now().rfc822z());
-}    
+}

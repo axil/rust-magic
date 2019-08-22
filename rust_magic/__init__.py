@@ -26,28 +26,31 @@ def cwd(path):
 def calc_hash(s):
     return ('%04x' % hash(s))[-4:]
 
+print_wrapper = dedent('''\
+        #[allow(unused)]
+        fn main(){
+            println!("{:?}", (||{
+        %s
+            })());
+        }\
+'''), ' '*8
+
+run_wrapper =  dedent('''\
+        #[allow(unused)]
+        fn main(){
+        %s
+        }\
+'''), ' '*4
+
 def construct_rs(mline, cell):
-    print_wrapper =  dedent('''\
-            #[allow(unused)]
-            fn main(){
-                println!("{:?}", (||{
-                    %s
-                })());
-            }\
-    ''')
-    run_wrapper =  dedent('''\
-            #[allow(unused)]
-            fn main(){
-                %s
-            }\
-    ''')
     cmd = ['cargo', 'script']
     mline = mline.strip()
     if cell is None:
-        if mline.rstrip().endswith(';'):
-            body = run_wrapper % mline
+        if len(mline) > 0 and mline[-1] in ';}':
+            wrapper = run_wrapper
         else:
-            body = print_wrapper % mline
+            wrapper = print_wrapper
+        body = wrapper[0] % (wrapper[1] + mline)
     else:
         if mline:
             cmd.extend(mline.split('#', 1)[0].split())
@@ -55,10 +58,6 @@ def construct_rs(mline, cell):
             body = cell
         else:
             cell = cell.rstrip()
-            if cell.endswith(';'):
-                wrapper = run_wrapper
-            else:
-                wrapper = print_wrapper
             lines = cell.split('\n')
             for i, line in enumerate(lines):
                 if line.startswith('//') or \
@@ -68,7 +67,16 @@ def construct_rs(mline, cell):
                     pass
                 else:
                     break
-            body = '\n'.join(lines[:i] + [wrapper % '\n'.join(lines[i:])])
+            wrapper = print_wrapper
+            for line in reversed(lines[i:]):
+                line = line.split('//', 1)[0].rstrip()
+                if not line:
+                    continue
+                if line[-1] in ';}':
+                    wrapper = run_wrapper
+                break
+            body = '\n'.join(lines[:i] + [wrapper[0] % '\n'.join(
+                wrapper[1] + line for line in lines[i:])])
     return cmd, body
 
 @magics_class
@@ -83,20 +91,19 @@ class MyMagics(Magics):
 
     @line_cell_magic
     def rust(self, mline, cell=None):
-        "Magic that works both as %lcmagic and as %%lcmagic"
         cmd, body = construct_rs(mline, cell)
-        with cwd(self.work_dir):
+#        with cwd(self.work_dir):
             #filename = 'cell-%s.rs' % calc_hash(body)
-            filename = 'cell.rs'
-            open(filename, 'wb').write(body.encode('utf8'))
-            cmd.append(filename)
-            with Popen(cmd, stdout=PIPE, stderr=STDOUT) as proc:
-                while True:
-                    line = proc.stdout.readline()
-                    if line:
-                        print(line.decode().rstrip())
-                    else:
-                        break
+        filename = os.path.join(self.work_dir, 'cell.rs')
+        open(filename, 'wb').write(body.encode('utf8'))
+        cmd.append(filename)
+        with Popen(cmd, stdout=PIPE, stderr=STDOUT) as proc:
+            while True:
+                line = proc.stdout.readline()
+                if line:
+                    print(line.decode().rstrip())
+                else:
+                    break
     
     @line_cell_magic
     def trust(self, line, cell=None):
@@ -122,7 +129,7 @@ if __name__ == '__main__':
 #        if 'four_cell' in test_name:
 #            import ipdb; ipdb.set_trace()
         if body != expect:
-            print(test_name + ' failed:\n' + body + '\n!= expected\n' + expect)
+            print(test_name + ' failed:\n' + repr(body) + '\n!= expected\n' + repr(expect))
             ok = False
         else:
             sys.stdout.write('.')
