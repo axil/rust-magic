@@ -28,3 +28,11 @@ can be provided in the cell mode:
 
 Copy-pastable form of the examples on [github](https://github.com/axil/rust-magic/blob/master/example.ipynb) or in
 [nbviewer](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/example.ipynb).
+
+## Syntax highlighting
+
+```
+import IPython
+js = "IPython.CodeCell.options_default.highlight_modes['text/x-rustsrc'] = {'reg':[/^%%rust/]};"
+IPython.core.display.display_javascript(js, raw=True)
+```
