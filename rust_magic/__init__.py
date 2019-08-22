@@ -60,7 +60,7 @@ def construct_rs(mline, cell):
         body = wrapper[0] % (wrapper[1] + mline)
     else:
         if mline:
-            cmd.extend(mline.split('#', 1)[0].split())
+            cmd.extend(mline.split('//', 1)[0].split())
         if 'fn main(' in cell:
             body = cell
         else:
