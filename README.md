@@ -31,7 +31,7 @@ Copy-pastable form of the examples on [github](https://github.com/axil/rust-magi
 
 ## Syntax highlighting
 
-Run the following snippet in a python jupyter cell to enable rust syntax highlighting in %%rust cells:
+To enable rust syntax highlighting in %%rust cells run the following snippet in a python jupyter cell:
 ```
 from notebook.services.config import ConfigManager
 c = ConfigManager()
