@@ -1,0 +1,2 @@
+%%rust
+time::now().rfc822z().to_string()
