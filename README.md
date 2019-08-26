@@ -38,18 +38,18 @@ c = ConfigManager()
 c.update('notebook', {"CodeCell": {"highlight_modes": {"text/x-rustsrc": {"reg": ["^%%rust"]}}}})
 ```
 
-It only needs to be run once: it stores the setting in a config file in home directory.
+This only needs to be run once: it stores the setting in a config file in home directory.
 
 ## Long cells
 
 Jupyter "doesn't like" long cells: when a cell gets longer than the screen its output is not readily visible.
 Here're a few ways how to handle it with rust_magic:
 
-a) putting dependencies into a separate cell
+a) putting dependencies into a separate cell ([more](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/docs/deps_example.ipynb))
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/deps.png" width="600px">
 
 b) collapsing function bodies with codefolding jupyter extension
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/collapsed.png" width="600px">
 
-c) putting function definitions into separate cells
+c) putting function definitions into separate cells ([more](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/docs/funcs_example.ipynb))
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn1.png" width="600px">
