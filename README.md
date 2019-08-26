@@ -1,4 +1,4 @@
-# rust-magic
+# rust-magic [![Build Status](https://travis-ci.org/axil/rust-magic.svg?branch=master)](https://travis-ci.org/axil/rust-magic)
 
 Allows to try rust in Jupyter notebook. Implemented via line/cell magics:
 
