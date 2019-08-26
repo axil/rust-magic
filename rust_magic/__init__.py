@@ -11,7 +11,11 @@ import glob
 import os
 import re
 from textwrap import dedent
-from time import perf_counter as clock
+try:
+    from time import perf_counter as clock
+except:     # python2.7 compatibility
+    import sys, time
+    perf_counter = time.clock if sys.platform == "win32" else time.time
 from subprocess import PIPE, STDOUT, Popen
 import sys
 
