@@ -46,10 +46,10 @@ Jupyter "doesn't like" long cells: when a cell gets longer than the screen its o
 Here're a few ways how to handle it with rust_magic:
 
 a) codefolding jupyter extension
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/debug1.png" width="800">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/debug1.png" max-width="600">
 
 b) putting dependencies into a separate cell
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/deps.png" width="800">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/deps.png" max-width="600">
 
 c) putting function definitions into separate cells
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn.png" width="800">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn.png" max-width="600">
