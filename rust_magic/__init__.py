@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2019, Lev Maximov
-# All rights reserved.	
+# All rights reserved.
 # Distributed under the terms of the MIT license:
 # http://www.opensource.org/licenses/MIT
 
 from __future__ import print_function
+from contextlib import contextmanager
 import glob
 import os
 import re
@@ -19,7 +20,6 @@ from IPython.core.magic import (Magics, magics_class, line_magic,
 
 __version__ = '0.3.2'
 
-from contextlib import contextmanager
 
 @contextmanager
 def cwd(path):
@@ -111,7 +111,7 @@ class MyMagics(Magics):
                     print(line.decode().rstrip())
                 else:
                     break
-    
+
     @line_cell_magic
     def trust(self, line, cell=None):
         t1 = clock()
@@ -144,4 +144,3 @@ if __name__ == '__main__':
             sys.stdout.flush()
     if ok:
         print('\nok')
-
