@@ -108,6 +108,12 @@ def construct_rs(mline, cell, deps={}, funcs={}):
                 wrapper[1] + line for line in lines[i:])])
     return cmd, body
 
+if sys.version_info[0] < 3:
+    from collections import OrderedDict
+    EMPTY_DICT = OrderedDict()
+else:
+    EMPTY_DICT = {}
+
 @magics_class
 class MyMagics(Magics):
     def __init__(self, *args, **kwargs):
@@ -115,8 +121,8 @@ class MyMagics(Magics):
         self.work_dir = '.rust_magic'
         if not os.path.exists(self.work_dir):
             os.mkdir(self.work_dir)
-        self.deps = {}
-        self.funcs = {}
+        self.deps = EMPTY_DICT
+        self.funcs = EMPTY_DICT
 #        self.temp_dir = tempfile.TemporaryDirectory()
 #        print('Working dir:', self.temp_dir.name)
 
