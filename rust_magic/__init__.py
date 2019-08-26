@@ -125,7 +125,8 @@ def load_ipython_extension(ipython):
 
 if __name__ == '__main__':
     ok = True
-    for test_name in glob.glob(os.path.join('..', 'tests', '*.txt')):
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for test_name in glob.glob(os.path.join(project_dir, 'tests', '*.txt')):
         fin = open(test_name)
         mline = fin.readline()
         if '%rust ' in mline:

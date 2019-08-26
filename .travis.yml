@@ -1,0 +1,8 @@
+language: python
+python:
+  - "3.6"
+  - "3.7"
+script: python rust_magic/__init__.py
+branches:
+  only:
+    - master
