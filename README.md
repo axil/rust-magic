@@ -2,7 +2,7 @@
 
 Allows to try rust in Jupyter notebook. Implemented via line/cell magics:
 
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/rust-magic.png" width="600">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust-magic.png" width="600">
 
 ## Installation
 
@@ -18,13 +18,13 @@ Allows to try rust in Jupyter notebook. Implemented via line/cell magics:
 
 are supported via normal `cargo script` syntax:
 
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/external-crate.png" width="600">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/external-crate.png" width="600">
 
 ## Compiler options
 
 can be provided in the cell mode:
 
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/debug1.png" width="800">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/debug1.png" width="800">
 
 Copy-pastable form of the examples on [github](https://github.com/axil/rust-magic/blob/master/example.ipynb) or in
 [nbviewer](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/example.ipynb).
