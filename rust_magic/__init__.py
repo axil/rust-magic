@@ -145,11 +145,11 @@ class MyMagics(Magics):
     @line_cell_magic
     def rust_deps(self, line, cell=None):
         if cell is None:
-            self.deps = [d for d in re.split('\s*,\s*', line) if d]
+            self.deps = [d for d in re.split('\s*;\s*', line) if d]
         else:
             self.deps = cell.splitlines()
         self.deps = [normalize_dep(dep) for dep in self.deps]
-        print(self.deps)
+        print('Dependencies:', self.deps)
 
     @line_cell_magic
     def rust_fn(self, line, cell=None):
@@ -158,7 +158,7 @@ class MyMagics(Magics):
             del self.funcs[name]
         else:
             self.funcs[name] = cell
-        print(self.funcs.keys())
+        print('Functions:', list(self.funcs.keys()))
 
 
 def load_ipython_extension(ipython):
