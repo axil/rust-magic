@@ -52,4 +52,4 @@ b) collapsing function bodies with codefolding jupyter extension
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/collapsed.png" width="600px">
 
 c) putting function definitions into separate cells
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn.png" width="600px">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn1.png" width="600px">
