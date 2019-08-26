@@ -8,6 +8,7 @@ extern crate ndarray;
 #[allow(unused)]
 fn main(){
     println!("{:?}", (||{
-        time::now().rfc822z().to_string()
+        (time::now().rfc822z().to_string(), 
+         ndarray::Array::from_vec(vec![1., 2., 3.]).sum())
     })());
 }

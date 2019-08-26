@@ -10,11 +10,12 @@ from contextlib import contextmanager
 import glob
 import os
 import re
+import sys
 from textwrap import dedent
 try:
     from time import perf_counter as clock
 except:     # python2.7 compatibility
-    import sys, time
+    import time
     perf_counter = time.clock if sys.platform == "win32" else time.time
 from subprocess import PIPE, STDOUT, Popen
 import sys
@@ -50,25 +51,25 @@ print_wrapper = dedent('''\
         println!("{:?}", (||{
     %s
         })());
-    }\
+    }
 '''), ' '*8
 
 run_wrapper =  dedent('''\
     #[allow(unused)]
     fn main(){
     %s
-    }\
+    }
 '''), ' '*4
 
 def normalize_dep(dep):
     return ' = '.join(re.split('\s*=\s*', dep))
 
-def construct_rs(mline, cell, deps=[], funcs={}):
+def construct_rs(mline, cell, deps={}, funcs={}):
     cmd = ['cargo', 'script']
     mline = mline.strip()
     body = ''
     if deps:
-        body = deps_template % '\n'.join('//! %s' % dep for dep in deps)
+        body = deps_template % '\n'.join('//! %s = %s' % d for d in deps.items())
         for dep in deps:
             body += 'extern crate %s;\n' % dep.split(' = ')[0]
     if funcs:
@@ -114,7 +115,7 @@ class MyMagics(Magics):
         self.work_dir = '.rust_magic'
         if not os.path.exists(self.work_dir):
             os.mkdir(self.work_dir)
-        self.deps = []
+        self.deps = {}
         self.funcs = {}
 #        self.temp_dir = tempfile.TemporaryDirectory()
 #        print('Working dir:', self.temp_dir.name)
@@ -144,41 +145,56 @@ class MyMagics(Magics):
 
     @line_cell_magic
     def rust_deps(self, line, cell=None):
+        chunks = []
+        line = line.strip()
         if cell is None:
-            self.deps = [d for d in re.split('\s*;\s*', line) if d]
+            if line in ('-c', '--clear'):
+                self.deps.clear()
+            elif line in ['-l', '--list']:
+                pass
+            else:
+                chunks = re.split('\s*;\s*', line)
         else:
-            self.deps = cell.splitlines()
-        self.deps = [normalize_dep(dep) for dep in self.deps]
-        print('Dependencies:', self.deps)
+            chunks = cell.splitlines()
+        if chunks:
+            self.deps.update(dict(re.split('\s*=\s*', d) for d in chunks if d))
+        s = '; '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
+        print('Deps:', s if s else '<none>')
 
     @line_cell_magic
     def rust_fn(self, line, cell=None):
-        name = line.split('//', 1)[0]
-        if cell is None:
-            del self.funcs[name]
+        name = line.split('//', 1)[0].strip()
+        if name in ('-c', '--clear'):
+            self.funcs.clear()
+        elif cell is None:
+            if name not in ('-l', '--list'):
+                del self.funcs[name]
         else:
             self.funcs[name] = cell
-        print('Functions:', list(self.funcs.keys()))
+        print('Funcs:', list(self.funcs.keys()))
 
 
 def load_ipython_extension(ipython):
     ipython.register_magics(MyMagics)
 
-if __name__ == '__main__':
+def parse_deps(s):
+    return dict(re.split('\s*=\s*', d) for d in s.splitlines() if d)
+
+def test_construct_rs():
     ok = True
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    for test_name in glob.glob(os.path.join(project_dir, 'tests', '*.txt')):
+    for test_name in glob.glob(os.path.join(project_dir, 'tests', 'deps2.txt')):
         fin = open(test_name)
         mline = fin.readline()
         if '%rust ' in mline:
             mline = mline.split('%rust ', 1)[1]
         cell = fin.read() or None
-        deps_fn = re.sub('\.txt', '.deps')
+        deps_fn = re.sub('\.txt', '.deps', test_name)
         if os.path.exists(deps_fn):
-            deps = open(deps_fn).readlines()
+            deps = open(deps_fn).read()
         else:
-            deps = []
-        cmd, body = construct_rs(mline, cell, deps)
+            deps = ''
+        cmd, body = construct_rs(mline, cell, parse_deps(deps))
         expect = open(re.sub('\.txt$', '.rs', test_name)).read()
 #        if 'four_cell' in test_name:
 #            import ipdb; ipdb.set_trace()
@@ -189,4 +205,50 @@ if __name__ == '__main__':
             sys.stdout.write('.')
             sys.stdout.flush()
     if ok:
-        print('\nok')
+        print('\n' + cur_func_name() + ' ok')
+    else:
+        sys.exit(1)
+
+def eq(a, b):
+    if a != b:
+        print('%s != %s' % (a, b))
+        sys.exit(1)
+
+cur_func_name = lambda n=0: sys._getframe(n + 1).f_code.co_name
+
+def test_deps():
+    m = MyMagics()
+    m.rust_deps('a=1')
+    eq(m.deps, {'a': '1'})
+    m.rust_deps(' -l ')
+    eq(m.deps, {'a': '1'})
+    m.rust_deps('--list')
+    eq(m.deps, {'a': '1'})
+    m.rust_deps('', 'a=1\nb=2')
+    eq(m.deps, {'a': '1', 'b': '2'})
+    m.rust_deps('c=3;d=4')
+    eq(m.deps, {'a': '1', 'b': '2', 'c': '3', 'd': '4'})
+    m.rust_deps('--clear')
+    eq(m.deps, {})
+    print(cur_func_name() + ' ok')
+
+def test_funcs():
+    m = MyMagics()
+    m.rust_fn('f', 'f()')
+    eq(m.funcs, {'f': 'f()'})
+    m.rust_fn('-l')
+    eq(m.funcs, {'f': 'f()'})
+    m.rust_fn('--list')
+    eq(m.funcs, {'f': 'f()'})
+    m.rust_fn('f // comment', 'g()')
+    eq(m.funcs, {'f': 'g()'})
+    m.rust_fn('h', 'h()')
+    eq(m.funcs, {'f': 'g()', 'h': 'h()'})
+    m.rust_fn('--clear')
+    eq(m.funcs, {})
+    print(cur_func_name() + ' ok')
+
+if __name__ == '__main__':
+    test_construct_rs()
+    test_deps()
+    test_funcs()
