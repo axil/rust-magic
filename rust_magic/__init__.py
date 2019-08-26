@@ -71,7 +71,7 @@ def construct_rs(mline, cell, deps={}, funcs={}):
     if deps:
         body = deps_template % '\n'.join('//! %s = %s' % d for d in deps.items())
         for dep in deps:
-            body += 'extern crate %s;\n' % dep.split(' = ')[0]
+            body += 'extern crate %s;\n' % dep
     if funcs:
         body += '\n'.join(funcs.values())
     if cell is None:
@@ -108,21 +108,21 @@ def construct_rs(mline, cell, deps={}, funcs={}):
                 wrapper[1] + line for line in lines[i:])])
     return cmd, body
 
-if sys.version_info[0] < 3:
+if sys.version_info[:3] < (3,6,0):
     from collections import OrderedDict
-    EMPTY_DICT = OrderedDict()
+    odict = OrderedDict
 else:
-    EMPTY_DICT = {}
+    odict = dict
 
 @magics_class
 class MyMagics(Magics):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(MyMagics, self).__init__(*args, **kwargs)
         self.work_dir = '.rust_magic'
         if not os.path.exists(self.work_dir):
             os.mkdir(self.work_dir)
-        self.deps = EMPTY_DICT
-        self.funcs = EMPTY_DICT
+        self.deps = odict()
+        self.funcs = {}
 #        self.temp_dir = tempfile.TemporaryDirectory()
 #        print('Working dir:', self.temp_dir.name)
 
@@ -163,7 +163,7 @@ class MyMagics(Magics):
         else:
             chunks = cell.splitlines()
         if chunks:
-            self.deps.update(dict(re.split('\s*=\s*', d) for d in chunks if d))
+            self.deps.update(odict(re.split('\s*=\s*', d) for d in chunks if d))
         s = '; '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
         print('Deps:', s if s else '<none>')
 
@@ -184,7 +184,7 @@ def load_ipython_extension(ipython):
     ipython.register_magics(MyMagics)
 
 def parse_deps(s):
-    return dict(re.split('\s*=\s*', d) for d in s.splitlines() if d)
+    return odict(re.split('\s*=\s*', d) for d in s.splitlines() if d)
 
 def test_construct_rs():
     ok = True
