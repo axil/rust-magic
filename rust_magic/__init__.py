@@ -63,15 +63,16 @@ run_wrapper =  dedent('''\
 def normalize_dep(dep):
     return ' = '.join(re.split('\s*=\s*', dep))
 
-def construct_rs(mline, cell, deps=[]):
+def construct_rs(mline, cell, deps=[], funcs={}):
     cmd = ['cargo', 'script']
     mline = mline.strip()
+    body = ''
     if deps:
         body = deps_template % '\n'.join('//! %s' % dep for dep in deps)
         for dep in deps:
             body += 'extern crate %s;\n' % dep.split(' = ')[0]
-    else:
-        body = ''
+    if funcs:
+        body += '\n'.join(funcs.values())
     if cell is None:
         if len(mline) > 0 and mline[-1] in ';}':
             wrapper = run_wrapper
@@ -114,12 +115,13 @@ class MyMagics(Magics):
         if not os.path.exists(self.work_dir):
             os.mkdir(self.work_dir)
         self.deps = []
+        self.funcs = {}
 #        self.temp_dir = tempfile.TemporaryDirectory()
 #        print('Working dir:', self.temp_dir.name)
 
     @line_cell_magic
     def rust(self, mline, cell=None):
-        cmd, body = construct_rs(mline, cell, self.deps)
+        cmd, body = construct_rs(mline, cell, self.deps, self.funcs)
 #        with cwd(self.work_dir):
             #filename = 'cell-%s.rs' % calc_hash(body)
         filename = os.path.join(self.work_dir, 'cell.rs')
@@ -143,11 +145,21 @@ class MyMagics(Magics):
     @line_cell_magic
     def rust_deps(self, line, cell=None):
         if cell is None:
-            self.deps = re.split('\s*,\s*', line)
+            self.deps = [d for d in re.split('\s*,\s*', line) if d]
         else:
             self.deps = cell.splitlines()
         self.deps = [normalize_dep(dep) for dep in self.deps]
         print(self.deps)
+
+    @line_cell_magic
+    def rust_fn(self, line, cell=None):
+        name = line.split('//', 1)[0]
+        if cell is None:
+            del self.funcs[name]
+        else:
+            self.funcs[name] = cell
+        print(self.funcs.keys())
+
 
 def load_ipython_extension(ipython):
     ipython.register_magics(MyMagics)
