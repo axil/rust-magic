@@ -45,11 +45,11 @@ It only needs to be run once: it stores the setting in a config file in home dir
 Jupyter "doesn't like" long cells: when a cell gets longer than the screen its output is not readily visible.
 Here're a few ways how to handle it with rust_magic:
 
-a) codefolding jupyter extension
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/debug1.png" max-width="600">
+a) putting dependencies into a separate cell
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/deps.png" width="600px">
 
-b) putting dependencies into a separate cell
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/deps.png" max-width="600">
+b) collapsing function bodies with codefolding jupyter extension
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/collapsed.png" width="600px">
 
 c) putting function definitions into separate cells
-<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn.png" max-width="600">
+<img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn.png" width="600px">
