@@ -141,6 +141,7 @@ class MyMagics(Magics):
         filename = os.path.join(self.work_dir, 'cell.rs')
         open(filename, 'wb').write(body.encode('utf8'))
         cmd.append(filename)
+        os.environ['RUSTC_WRAPPER'] = 'sccache'
         with Popen(cmd, stdout=PIPE, stderr=STDOUT) as proc:
             while True:
                 line = proc.stdout.readline()
