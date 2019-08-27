@@ -128,6 +128,13 @@ class MyMagics(Magics):
 
     @line_cell_magic
     def rust(self, mline, cell=None):
+        '''
+        %rust/%%rust runs code in the line/cell.
+        %rust -v/--version prints version of rust_magic
+        '''
+        if cell is None and mline.strip() in ('-v', '--version'):
+            print('rust_magic v%s' % __version__)
+            return
         cmd, body = construct_rs(mline, cell, self.deps, self.funcs)
 #        with cwd(self.work_dir):
             #filename = 'cell-%s.rs' % calc_hash(body)
@@ -144,6 +151,9 @@ class MyMagics(Magics):
 
     @line_cell_magic
     def trust(self, line, cell=None):
+        '''
+        Same as %rust/%%rust but also measures total elapsed time
+        '''
         t1 = clock()
         self.rust(line, cell)
         t2 = clock()
@@ -151,6 +161,14 @@ class MyMagics(Magics):
 
     @line_cell_magic
     def rust_deps(self, line, cell=None):
+        '''
+        One or more dependencies with version numbers separated by semicolon, eg
+        %rust_deps ndarray = "0.12.1"; glob = "0.3.0"
+        Use -l/--list to see currently configured deps:
+        %rust_deps --list
+        Use -c/--clear to clear the list of deps:
+        %rust_deps --clear
+        '''
         chunks = []
         line = line.strip()
         if cell is None:
@@ -163,12 +181,23 @@ class MyMagics(Magics):
         else:
             chunks = cell.splitlines()
         if chunks:
+            for d in chunks:
+                if d.count('=') != 1:
+                    print('Wrong deps format: %r' % d)
+                    return
             self.deps.update(odict(re.split('\s*=\s*', d) for d in chunks if d))
         s = '; '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
         print('Deps:', s if s else '<none>')
 
     @line_cell_magic
     def rust_fn(self, line, cell=None):
+        '''
+        Function definitions block with optional name.
+        Use -l/--list to see currently configured function blocs:
+        %rust_fn --list
+        Use -c/--clear to clear the list of function blocks:
+        %rust_fn --clear
+        '''
         name = line.split('//', 1)[0].strip()
         if name in ('-c', '--clear'):
             self.funcs.clear()
