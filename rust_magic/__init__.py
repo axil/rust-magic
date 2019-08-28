@@ -64,14 +64,20 @@ run_wrapper =  dedent('''\
 def normalize_dep(dep):
     return ' = '.join(re.split('\s*=\s*', dep))
 
-def construct_rs(mline, cell, deps={}, funcs={}):
+def construct_rs(mline, cell, deps={}, funcs={}, feats=[]):
     cmd = ['cargo', 'script']
     mline = mline.strip()
     body = ''
     if deps:
         body = deps_template % '\n'.join('//! %s = %s' % d for d in deps.items())
+        if feats:
+            for feat in feats:
+                body += '#![feature(%s)]\n' % feat
         for dep in deps:
             body += 'extern crate %s;\n' % dep
+    elif feats:
+        for feat in feats:
+            body += '#![feature(%s)]\n' % feat
     if funcs:
         body += '\n'.join(funcs.values())
     if cell is None:
@@ -123,6 +129,7 @@ class MyMagics(Magics):
             os.mkdir(self.work_dir)
         self.deps = odict()
         self.funcs = {}
+        self.feats = []
 #        self.temp_dir = tempfile.TemporaryDirectory()
 #        print('Working dir:', self.temp_dir.name)
 
@@ -135,9 +142,9 @@ class MyMagics(Magics):
         if cell is None and mline.strip() in ('-v', '--version'):
             print('rust_magic v%s' % __version__)
             return
-        cmd, body = construct_rs(mline, cell, self.deps, self.funcs)
+        cmd, body = construct_rs(mline, cell, self.deps, self.funcs, self.feats)
 #        with cwd(self.work_dir):
-            #filename = 'cell-%s.rs' % calc_hash(body)
+           #filename = 'cell-%s.rs' % calc_hash(body)
         filename = os.path.join(self.work_dir, 'cell.rs')
         open(filename, 'wb').write(body.encode('utf8'))
         cmd.append(filename)
@@ -190,20 +197,47 @@ class MyMagics(Magics):
         s = '; '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
         print('Deps:', s if s else '<none>')
 
+    @line_magic
+    def rust_feat(self, line):
+        line = line.strip()
+        if line in ('-c', '--clear'):
+            self.feats = []
+        elif line not in ('-l', '--list'):
+            if line not in self.feats:
+                self.feats.append(line)
+        print(self.feats)
+
     @line_cell_magic
     def rust_fn(self, line, cell=None):
         '''
         Function definitions block with optional name.
-        Use -l/--list to see currently configured function blocs:
-        %rust_fn --list
-        Use -c/--clear to clear the list of function blocks:
-        %rust_fn --clear
+        -l/--list see currently configured function blocs:
+           %rust_fn --list
+        -c/--clear to clear the list of function blocks:
+           %rust_fn --clear
+        -b/--build  runs current cell after others in the list
+        -o/--only  runs current cell only
         '''
-        name = line.split('//', 1)[0].strip()
-        if name in ('-c', '--clear'):
+        parts = line.split('//', 1)[0].strip().split()
+        flags, name = [], ''
+        for p in parts:
+            if p[0] == '-':
+                flags.append(p)
+            else:
+                name = p
+        if ('-b' in flags or '--build' in flags) and cell is not None:
+            if name in self.funcs:
+                del self.funcs[name]
+            self.rust('', cell)
+        elif ('-o' in flags or '--only' in flags) and cell is not None:
+            backup = self.funcs
+            self.funcs = {}
+            self.rust('', cell)
+            self.funcs = backup
+        elif '-c' in flags or  '--clear' in flags:
             self.funcs.clear()
-        elif cell is None:
-            if name not in ('-l', '--list'):
+        if cell is None:
+            if '-l' not in flags and '--list' not in flags and name in self.funcs:
                 del self.funcs[name]
         else:
             self.funcs[name] = cell
