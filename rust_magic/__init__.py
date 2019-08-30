@@ -96,9 +96,9 @@ def construct_rs(mline, cell, deps={}, funcs={}, feats=[]):
             lines = cell.split('\n')
             for i, line in enumerate(lines):
                 if line.startswith('//') or \
-                line.startswith('extern crate') or \
-                line.startswith('use ') or \
-                line.strip() == '':
+                   line.startswith('extern crate') or \
+                   line.startswith('use ') or \
+                   line.strip() == '':
                     pass
                 else:
                     break
@@ -185,16 +185,12 @@ class MyMagics(Magics):
             elif line in ['-l', '--list']:
                 pass
             else:
-                chunks = re.split('\s*;\s*', line)
+                    chunks = ["%s = %s" % (a, b) for a, b in re.findall('\s*(\w+)\s*=\s*((?:{[^}]*})|(?:"[^"]*"))', line)]
         else:
             chunks = cell.splitlines()
         if chunks:
-            for d in chunks:
-                if d.count('=') != 1:
-                    print('Wrong deps format: %r' % d)
-                    return
-            self.deps.update(odict(re.split('\s*=\s*', d) for d in chunks if d))
-        s = '; '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
+            self.deps.update(odict(re.split('\s*=\s*', d, 1) for d in chunks if d))
+        s = ', '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
         print('Deps:', s if s else '<none>')
 
     @line_magic
@@ -288,16 +284,16 @@ cur_func_name = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
 def test_deps():
     m = MyMagics()
-    m.rust_deps('a=1')
-    eq(m.deps, {'a': '1'})
+    m.rust_deps('a="1"')
+    eq(m.deps, {'a': '"1"'})
     m.rust_deps(' -l ')
-    eq(m.deps, {'a': '1'})
+    eq(m.deps, {'a': '"1"'})
     m.rust_deps('--list')
-    eq(m.deps, {'a': '1'})
-    m.rust_deps('', 'a=1\nb=2')
-    eq(m.deps, {'a': '1', 'b': '2'})
-    m.rust_deps('c=3;d=4')
-    eq(m.deps, {'a': '1', 'b': '2', 'c': '3', 'd': '4'})
+    eq(m.deps, {'a': '"1"'})
+    m.rust_deps('', 'a="1"\nb="2"')
+    eq(m.deps, {'a': '"1"', 'b': '"2"'})
+    m.rust_deps('c="3",d={git = "www"}')
+    eq(m.deps, {'a': '"1"', 'b': '"2"', 'c': '"3"', 'd': '{git = "www"}'})
     m.rust_deps('--clear')
     eq(m.deps, {})
     print(cur_func_name() + ' ok')
