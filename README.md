@@ -43,7 +43,7 @@ This only needs to be run once: it stores the setting in a config file in home d
 ## Long cells
 
 Jupyter "doesn't like" long cells: when a cell gets longer than the screen its output is not readily visible.
-Here're a few ways how to handle it with rust_magic:
+Here're a few ways how to handle the problem with rust_magic:
 
 a) putting dependencies into a separate cell ([more](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/docs/deps_example.ipynb))
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/deps.png" width="600px">
