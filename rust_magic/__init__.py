@@ -61,8 +61,26 @@ run_wrapper =  dedent('''\
     }
 '''), ' '*4
 
+def eq(a, b):
+    if a != b:
+        print('%s != %s' % (a, b))
+        sys.exit(1)
+
+cur_func_name = lambda n=0: sys._getframe(n + 1).f_code.co_name
+
 def normalize_dep(dep):
     return ' = '.join(re.split('\s*=\s*', dep))
+
+def parse_deps_line(s):
+    return re.findall('\s*(\w+)\s*=\s*((?:{[^}]*})|(?:"[^"]*"))', s)
+
+def test_parse_deps_line():
+    eq(parse_deps_line('''\
+            ndarray = {git = "https://github.com/rust-ndarray/ndarray.git"}, \
+            array="0.12.1"'''),
+        [('ndarray', '{git = "https://github.com/rust-ndarray/ndarray.git"}'),
+         ('array', '"0.12.1"')])
+    print(cur_func_name() + ' ok')
 
 def construct_rs(mline, cell, deps={}, funcs={}, feats=[]):
     cmd = ['cargo', 'script']
@@ -185,7 +203,7 @@ class MyMagics(Magics):
             elif line in ['-l', '--list']:
                 pass
             else:
-                    chunks = ["%s = %s" % (a, b) for a, b in re.findall('\s*(\w+)\s*=\s*((?:{[^}]*})|(?:"[^"]*"))', line)]
+                chunks = ["%s = %s" % (a, b) for a, b in parse_deps_line(line)]
         else:
             chunks = cell.splitlines()
         if chunks:
@@ -243,8 +261,8 @@ class MyMagics(Magics):
 def load_ipython_extension(ipython):
     ipython.register_magics(MyMagics)
 
-def parse_deps(s):
-    return odict(re.split('\s*=\s*', d) for d in s.splitlines() if d)
+def parse_deps_cell(s):
+    return odict(re.split('\s*=\s*', d, 1) for d in s.splitlines() if d)
 
 def test_construct_rs():
     ok = True
@@ -260,7 +278,7 @@ def test_construct_rs():
             deps = open(deps_fn).read()
         else:
             deps = ''
-        cmd, body = construct_rs(mline, cell, parse_deps(deps))
+        cmd, body = construct_rs(mline, cell, parse_deps_cell(deps))
         expect = open(re.sub('\.txt$', '.rs', test_name)).read()
 #        if 'four_cell' in test_name:
 #            import ipdb; ipdb.set_trace()
@@ -274,13 +292,6 @@ def test_construct_rs():
         print('\n' + cur_func_name() + ' ok')
     else:
         sys.exit(1)
-
-def eq(a, b):
-    if a != b:
-        print('%s != %s' % (a, b))
-        sys.exit(1)
-
-cur_func_name = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
 def test_deps():
     m = MyMagics()
@@ -315,6 +326,7 @@ def test_funcs():
     print(cur_func_name() + ' ok')
 
 if __name__ == '__main__':
+    test_parse_deps_line()
     test_construct_rs()
     test_deps()
     test_funcs()
