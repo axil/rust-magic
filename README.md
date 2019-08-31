@@ -26,8 +26,7 @@ can be provided in the cell mode:
 
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/debug1.png" width="800">
 
-Copy-pastable form of the examples on [github](https://github.com/axil/rust-magic/blob/master/example.ipynb) or in
-[nbviewer](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/example.ipynb).
+NB [Here's](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/example.ipynb) a copy-pastable form of all the examples above.
 
 ## Syntax highlighting
 
