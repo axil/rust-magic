@@ -53,3 +53,8 @@ b) collapsing function bodies with codefolding jupyter extension
 
 c) putting function definitions into separate cells ([more](https://nbviewer.jupyter.org/github/axil/rust-magic/blob/master/docs/funcs_example.ipynb))
 <img src="https://raw.githubusercontent.com/axil/rust-magic/master/img/rust_fn.png" width="600px">
+
+## Faster compile times
+
+can be acheived by caching dependencies compile results with [sccache](https://github.com/mozilla/sccache). 
+Rust-magic automatically uses it if it is installed in the system (`cargo install sccache`).
