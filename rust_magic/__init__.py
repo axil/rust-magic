@@ -202,18 +202,39 @@ class MyMagics(Magics):
         '''
         chunks = []
         line = line.strip()
+        only = False
         if cell is None:
-            if line in ('-c', '--clear'):
-                self.deps.clear()
-            elif line in ['-l', '--list']:
-                pass
-            else:
-                chunks = ["%s = %s" % (a, b) for a, b in parse_deps_line(line)]
+            while True:
+                parts = line.split(maxsplit=1)
+                if parts and parts[0].startswith('-'):
+                    if len(parts) == 2:
+                        opt, tail = parts
+                    else:
+                        opt, tail = parts[0], ''
+                    if opt in ('-c', '--clear'):
+                        self.deps.clear()
+                        line = ''
+                        break
+                    elif opt in ['-l', '--list']:
+                        line = ''
+                        break
+                    elif opt in ['-o', '--only']:
+                        only = True
+                    else:
+                        print('Unknown option:', opt)
+                        return
+                    line = tail
+                else:
+                    break
+            chunks = ["%s = %s" % (a, b) for a, b in parse_deps_line(line)]
         else:
             chunks = cell.splitlines()
         if chunks:
-            self.deps.update(odict(re.split('\s*=\s*', d, 1) for d in chunks if d))
-
+            news = odict(re.split('\s*=\s*', d, 1) for d in chunks if d)
+            if only:
+                self.deps = news
+            else:
+                self.deps.update(news)
         s = (', ' if cell is None else '\n').join(['%s = %s' % (k, v) for k, v in self.deps.items()])
         print('Deps:', s if s else '<none>')
 
