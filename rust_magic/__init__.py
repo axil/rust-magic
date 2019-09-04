@@ -72,14 +72,19 @@ def normalize_dep(dep):
     return ' = '.join(re.split('\s*=\s*', dep))
 
 def parse_deps_line(s):
-    return re.findall('\s*(\w+)\s*=\s*((?:{[^}]*})|(?:"[^"]*"))', s)
+    return [(k, v if v else '"*"') for (k, v) in 
+        re.findall('\s*([a-zA-Z-]+)\s*(?:=\s*((?:{[^}]*})|(?:"[^"]*")))?', s)]
 
 def test_parse_deps_line():
+    eq(parse_deps_line("ndarray, ndarray-rand, rand"), 
+        [('ndarray', '"*"'), ('ndarray-rand', '"*"'), ('rand', '"*"')])
     eq(parse_deps_line('''\
             ndarray = {git = "https://github.com/rust-ndarray/ndarray.git"}, \
             array="0.12.1"'''),
         [('ndarray', '{git = "https://github.com/rust-ndarray/ndarray.git"}'),
          ('array', '"0.12.1"')])
+    eq(parse_deps_line('ndarray="0.12.1", ndarray-rand="0.9.0", rand="0.7.0"'),
+        [('ndarray', '"0.12.1"'), ('ndarray-rand', '"0.9.0"'), ('rand', '"0.7.0"')])
     print(cur_func_name() + ' ok')
 
 def construct_rs(mline, cell, deps={}, funcs={}, feats=[]):
@@ -92,7 +97,7 @@ def construct_rs(mline, cell, deps={}, funcs={}, feats=[]):
             for feat in feats:
                 body += '#![feature(%s)]\n' % feat
         for dep in deps:
-            body += 'extern crate %s;\n' % dep
+            body += 'extern crate %s;\n' % dep.replace('-', '_')
     elif feats:
         for feat in feats:
             body += '#![feature(%s)]\n' % feat
