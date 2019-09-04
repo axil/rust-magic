@@ -213,7 +213,8 @@ class MyMagics(Magics):
             chunks = cell.splitlines()
         if chunks:
             self.deps.update(odict(re.split('\s*=\s*', d, 1) for d in chunks if d))
-        s = ', '.join(['%s = %s' % (k, v) for k, v in self.deps.items()])
+
+        s = (', ' if cell is None else '\n').join(['%s = %s' % (k, v) for k, v in self.deps.items()])
         print('Deps:', s if s else '<none>')
 
     @line_magic
