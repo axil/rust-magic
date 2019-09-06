@@ -205,7 +205,7 @@ class MyMagics(Magics):
         only = False
         if cell is None:
             while True:
-                parts = line.split(maxsplit=1)
+                parts = line.split(None, 1)
                 if parts and parts[0].startswith('-'):
                     if len(parts) == 2:
                         opt, tail = parts
